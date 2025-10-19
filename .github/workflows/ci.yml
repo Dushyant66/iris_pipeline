@@ -16,37 +16,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Setup Python 3.10
       - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
+      # Set PYTHONPATH
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
-      - name: Install core dependencies
+      # Install dependencies (without cml)
+      - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install numpy==1.26.4 pandas==2.3.3 scikit-learn==1.7.2 joblib pytest==8.4.2
+          pip install numpy==1.26.4 pandas==2.3.3 scikit-learn==1.7.2 joblib pytest==8.4.2 dvc
 
-      - name: Install DVC and CML
-        run: |
-          # Use the correct package name: 'cml'
-          pip install "dvc[s3]==3.63.0" cml
-
+      # Pull data from DVC (local storage)
       - name: Pull data from DVC
         run: dvc pull data/iris.csv --verbose
 
+      # Run tests
       - name: Run tests
         run: |
           pytest tests/test_pipeline.py --maxfail=1 --disable-warnings -q > test_output.txt 2>&1 || true
 
+      # Setup CML
       - name: Setup CML
         uses: iterative/setup-cml@v2
 
+      # Create and post CML report
       - name: Create and post CML report
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -58,3 +61,4 @@ jobs:
           cat test_output.txt >> report.md
           echo '```' >> report.md
           cml comment create report.md
+
