@@ -1,0 +1,54 @@
+name: IRIS CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+    branches: [dev, main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Set PYTHONPATH
+        run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: |
+          pip install numpy==1.26.4 pandas==2.3.3 scikit-learn==1.7.2 joblib pytest==8.4.2 dvc cml
+
+      - name: Pull data from DVC
+        run: dvc pull data/iris.csv --verbose
+
+      - name: Run tests
+        run: |
+          pytest tests/test_pipeline.py --maxfail=1 --disable-warnings -q > test_output.txt 2>&1 || true
+
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+
+      - name: Create and post CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "# IRIS Model Sanity Test Report" > report.md
+          echo "" >> report.md
+          echo "### Test Output" >> report.md
+          echo '```' >> report.md
+          cat test_output.txt >> report.md
+          echo '```' >> report.md
+          cml comment create report.md
