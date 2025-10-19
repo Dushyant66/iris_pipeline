@@ -32,11 +32,10 @@ jobs:
           pip install --upgrade pip
           pip install numpy==1.26.4 pandas==2.3.3 scikit-learn==1.7.2 joblib pytest==8.4.2
 
-      - name: Install DVC
-        run: pip install "dvc[s3]==3.63.0"
-
-      - name: Install CML
-        run: pip install iterative-cml
+      - name: Install DVC and CML
+        run: |
+          # Use the correct package name: 'cml'
+          pip install "dvc[s3]==3.63.0" cml
 
       - name: Pull data from DVC
         run: dvc pull data/iris.csv --verbose
@@ -59,4 +58,3 @@ jobs:
           cat test_output.txt >> report.md
           echo '```' >> report.md
           cml comment create report.md
-
