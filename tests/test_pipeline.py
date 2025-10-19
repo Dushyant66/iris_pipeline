@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from app import load_data, train_model, predict, validate_data, MODEL_PATH
+from train import load_data, train_model, predict, validate_data, MODEL_PATH
 
 def test_load_and_validate_data():
     df = load_data("data/iris.csv") 
