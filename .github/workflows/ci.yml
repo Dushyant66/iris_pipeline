@@ -27,9 +27,16 @@ jobs:
       - name: Set PYTHONPATH
         run: echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
 
-      - name: Install dependencies
+      - name: Install core dependencies
         run: |
-          pip install numpy==1.26.4 pandas==2.3.3 scikit-learn==1.7.2 joblib pytest==8.4.2 dvc cml
+          pip install --upgrade pip
+          pip install numpy==1.26.4 pandas==2.3.3 scikit-learn==1.7.2 joblib pytest==8.4.2
+
+      - name: Install DVC
+        run: pip install "dvc[s3]==3.63.0"
+
+      - name: Install CML
+        run: pip install cml==0.0.1
 
       - name: Pull data from DVC
         run: dvc pull data/iris.csv --verbose
